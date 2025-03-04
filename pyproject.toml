@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "page"
+version = "0.1.0"
+description = "A Python build tool inspired by Sage/Mage."
+authors = ["Theodor Emanuelsson <theodor.emanuelsson@me.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{ include = "page" , from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+argparse = "^1.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

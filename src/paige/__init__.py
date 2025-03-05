@@ -7,3 +7,4 @@ from paige.path import (
     from_bin_dir,
     from_build_dir,
 )
+from paige.exec import command, output, prepend_path

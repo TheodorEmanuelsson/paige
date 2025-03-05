@@ -3,8 +3,9 @@ import click
 import subprocess
 import sys
 
-TOOL_FOLDER_NAME = ".page"
-PAGEFILE_NAME = "pagefile.py"
+TOOL_FOLDER_NAME = ".paige"
+TOOL_FILE_NAME = "paigefile.py"
+MAKEFILE_NAME = "Makefile"
 
 @click.group()
 def cli():
@@ -12,19 +13,19 @@ def cli():
 
 @cli.command()
 def init():
-    """Initializes page"""
+    """Initializes paige"""
     tool_folder = TOOL_FOLDER_NAME
     tool_path = os.path.abspath(tool_folder)
 
     click.echo(f"Initializing '{TOOL_FOLDER_NAME}' tool environment in the current project directory...")
     click.echo(f"Folder will be created at: {tool_path}")
 
-    # Create .page folder in project root
+    # Create .paige folder in project root
     os.makedirs(tool_folder, exist_ok=True)
     click.echo(f"Created folder: {tool_folder}")
 
-    # Create virtual environment inside .page folder in project root
-    venv_path = os.path.join(tool_folder) # venv in .page in project root
+    # Create virtual environment inside .paige folder in project root
+    venv_path = os.path.join(tool_folder) # venv in .paige in project root
     click.echo(f"Creating virtual environment in: {venv_path}")
     try:
         subprocess.check_call([sys.executable, "-m", "venv", venv_path])
@@ -33,9 +34,9 @@ def init():
         click.secho(f"Error creating virtual environment: {e}", fg='red')
         return
 
-    # Install 'page' package into the .page virtual environment
+    # Install 'paige' package into the .paige virtual environment
     target_pip_executable = os.path.join(tool_folder, "bin", "pip")
-    package_name_to_install = "page"
+    package_name_to_install = "paige"
     click.echo(f"Installing package '{package_name_to_install}' into the virtual environment...")
     try:
         subprocess.check_call([target_pip_executable, "install", package_name_to_install])
@@ -44,7 +45,7 @@ def init():
         click.secho(f"Error installing package '{package_name_to_install}' into virtual environment: {e}", fg='red')
         return
 
-    # Create .gitignore file inside .page folder
+    # Create .gitignore file inside .paige folder
     gitignore_path = os.path.join(tool_path, ".gitignore")
     ignores = "\n".join([
         ".gitignore",
@@ -59,15 +60,40 @@ def init():
     except Exception as e:
         click.secho(f"Error creating .gitignore inside '{TOOL_FOLDER_NAME}': {e}", fg='yellow')
 
-    # Create a pagefile.py
-    pagefile_path = os.path.join(tool_path, PAGEFILE_NAME)
+    # Create a paigefile.py
+    paigefile_path = os.path.join(tool_path, TOOL_FILE_NAME)
     try:
-        with open(pagefile_path, "w") as f:
-            f.write("import page")
-        click.echo(f"Created empty pagefile.py in '{TOOL_FOLDER_NAME}' folder.")
-        click.echo(f"File created at: {pagefile_path}")
+        with open(paigefile_path, "w") as f:
+            f.write("import paige")
+        click.echo(f"Created empty paigefile.py in '{TOOL_FOLDER_NAME}' folder.")
+        click.echo(f"File created at: {paigefile_path}")
     except Exception as e:
-        click.secho(f"Error creating pagefile.py in '{TOOL_FOLDER_NAME}': {e}", fg='yellow')
+        click.secho(f"Error creating paigefile.py in '{TOOL_FOLDER_NAME}': {e}", fg='yellow')
+
+    # Create initial Makefile in the project root
+    makefile_path = os.path.join(tool_path, MAKEFILE_NAME)
+    makefile_content = f"""\
+.PHONY: all run
+
+all: help
+
+help:
+\t@echo "Usage: make <target>"
+\t@echo "Targets:"
+\t@echo "  run: Execute tasks defined in {TOOL_FILE_NAME}"
+\t@echo "  help: Show this help message"
+
+run:
+\t@echo "Executing tasks from {TOOL_FILE_NAME}..."
+\t@source {TOOL_FOLDER_NAME}/bin/activate && python {TOOL_FOLDER_NAME}/{TOOL_FILE_NAME}  # Activate venv and run paigefile.py
+"""
+    try:
+        with open(makefile_path, "w") as f:
+            f.write(makefile_content)
+        click.echo(f"Created initial {MAKEFILE_NAME} in the project root.")
+        click.echo(f"File created at: {os.path.abspath(makefile_path)}")
+    except Exception as e:
+        click.secho(f"Error creating {MAKEFILE_NAME}: {e}", fg='yellow')
 
 if __name__ == '__main__':
     cli()

@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "page"
+name = "paige"
 version = "0.1.0"
 description = "A Python build tool inspired by Sage/Mage."
 authors = ["Theodor Emanuelsson <theodor.emanuelsson@me.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{ include = "page",  from = "src" }]
+packages = [{ include = "paige",  from = "src" }]
 include = ["setup.py"]
 
 [tool.poetry.dependencies]
@@ -15,8 +15,8 @@ toml = "^0.10.2"
 click = "^8.1.8"
 
 [tool.poetry.scripts]
-page = "page.cli:cli"
-page-init = "page.cli:init_command"
+paige = "paige.cli:cli"
+paige-init = "paige.cli:init_command"
 
 [build-system]
 requires = ["poetry-core"]

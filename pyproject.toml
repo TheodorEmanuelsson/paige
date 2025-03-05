@@ -6,7 +6,6 @@ authors = ["Theodor Emanuelsson <theodor.emanuelsson@me.com>"]
 license = "MIT"
 readme = "README.md"
 packages = [{ include = "paige",  from = "src" }]
-include = ["setup.py"]
 
 [tool.poetry.dependencies]
 python = "^3.9"

@@ -3,6 +3,7 @@ import click
 import subprocess
 import sys
 
+PACKAGE_NAME = "paige"
 TOOL_FOLDER_NAME = ".paige"
 TOOL_FILE_NAME = "paigefile.py"
 MAKEFILE_NAME = "Makefile"
@@ -12,7 +13,8 @@ def cli():
     pass
 
 @cli.command()
-def init():
+@click.option('--dev', is_flag=True, default=False, help='Install paige in development mode (local install).')
+def init(dev:bool):
     """Initializes paige"""
     tool_folder = TOOL_FOLDER_NAME
     tool_path = os.path.abspath(tool_folder)
@@ -34,13 +36,19 @@ def init():
         click.secho(f"Error creating virtual environment: {e}", fg='red')
         return
 
-    # Install 'paige' package into the .paige virtual environment
+    # 3. Install 'paige' package into the .paige virtual environment (conditional install based on --dev flag)
     target_pip_executable = os.path.join(tool_folder, "bin", "pip")
-    package_name_to_install = "paige"
+    package_name_to_install = PACKAGE_NAME # Use PACKAGE_NAME constant
     click.echo(f"Installing package '{package_name_to_install}' into the virtual environment...")
     try:
-        subprocess.check_call([target_pip_executable, "install", package_name_to_install])
-        click.echo(f"Package '{package_name_to_install}' installed in the virtual environment.")
+        if dev: # Check if --dev flag is True
+            click.echo("Installing in development mode (local install)...")
+            subprocess.check_call([target_pip_executable, "install", "."]) # Local install
+            click.echo(f"Package '{package_name_to_install}' installed in the virtual environment from local project (dev mode).")
+        else:
+            click.echo("Installing from PyPI (or package index)...")
+            subprocess.check_call([target_pip_executable, "install", package_name_to_install]) # Install from PyPI
+            click.echo(f"Package '{package_name_to_install}' installed in the virtual environment from package index.")
     except subprocess.CalledProcessError as e:
         click.secho(f"Error installing package '{package_name_to_install}' into virtual environment: {e}", fg='red')
         return
@@ -71,27 +79,16 @@ def init():
         click.secho(f"Error creating paigefile.py in '{TOOL_FOLDER_NAME}': {e}", fg='yellow')
 
     # Create initial Makefile in the project root
-    makefile_path = os.path.join(tool_path, MAKEFILE_NAME)
     makefile_content = f"""\
-.PHONY: all run
-
-all: help
-
-help:
-\t@echo "Usage: make <target>"
-\t@echo "Targets:"
-\t@echo "  run: Execute tasks defined in {TOOL_FILE_NAME}"
-\t@echo "  help: Show this help message"
-
-run:
-\t@echo "Executing tasks from {TOOL_FILE_NAME}..."
-\t@source {TOOL_FOLDER_NAME}/bin/activate && python {TOOL_FOLDER_NAME}/{TOOL_FILE_NAME}  # Activate venv and run paigefile.py
+.PHONY:
+paige:
+\t@source {TOOL_FOLDER_NAME}/bin/activate && python {TOOL_FOLDER_NAME}/{TOOL_FILE_NAME} --paige-run
 """
     try:
-        with open(makefile_path, "w") as f:
+        with open(MAKEFILE_NAME, "w") as f:
             f.write(makefile_content)
-        click.echo(f"Created initial {MAKEFILE_NAME} in the project root.")
-        click.echo(f"File created at: {os.path.abspath(makefile_path)}")
+        click.echo(f"Created initial {MAKEFILE_NAME} in the project root (separated default and 'paige' targets).")
+        click.echo(f"File created at: {os.path.abspath(MAKEFILE_NAME)}")
     except Exception as e:
         click.secho(f"Error creating {MAKEFILE_NAME}: {e}", fg='yellow')
 

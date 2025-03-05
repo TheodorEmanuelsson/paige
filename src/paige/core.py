@@ -1,8 +1,14 @@
 import functools
+import subprocess
 import logging
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
+GIT_ROOT = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], text=True, stderr=subprocess.DEVNULL).strip()
+PACKAGE_NAME = "paige"
+TOOL_FOLDER_NAME = ".paige"
+TOOL_FILE_NAME = "paigefile.py"
+MAKEFILE_NAME = "Makefile"
 _GLOBAL_NAMESPACE = "_global_namespace"
 
 class TaskManager:

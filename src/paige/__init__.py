@@ -1,5 +1,4 @@
-from paige.core import task
-from paige.config import Makefile
+from paige.core import task, Makefile
 from paige.makefile_gen import generate_makefiles
 from paige.path import (
     from_git_root,

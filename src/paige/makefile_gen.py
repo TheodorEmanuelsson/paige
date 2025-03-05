@@ -1,16 +1,21 @@
 import os
 
-def scan_py_files(page_folder:str):
-    """Scans for .py files in the specified page folder and returns their names."""
+from paige.core import (
+    TOOL_DIR_PATH,
+    Makefile
+)
+
+def scan_py_files():
+    """Scans for .py files in the tool dir."""
     py_files = []
-    for filename in os.listdir(page_folder):
+    for filename in os.listdir(TOOL_DIR_PATH):
         if filename.endswith(".py") and filename != "pagefile.py":
-            filepath = os.path.join(page_folder, filename)
+            filepath = os.path.join(TOOL_DIR_PATH, filename)
             if os.path.isfile(filepath):
                 py_files.append(filename)
     return py_files
 
-def generate_makefiles(*makefiles):
+def generate_makefiles(*makefiles: Makefile):
     for makefile_config in makefiles:
         makefile_content = f"""\
 .PHONY: all {makefile_config.default_target}

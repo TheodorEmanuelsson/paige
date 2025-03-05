@@ -4,11 +4,10 @@ import subprocess
 import sys
 
 from paige.core import (
-    GIT_ROOT,
     PACKAGE_NAME,
-    TOOL_FOLDER_NAME,
-    TOOL_FILE_NAME,
-    MAKEFILE_NAME,
+    TOOL_DIR_NAME,
+    TOOL_DIR_PATH,
+    MAKEFILE_PATH,
 )
 
 @click.group()
@@ -16,20 +15,39 @@ def cli():
     pass
 
 @cli.command()
+@click.argument('package_name')
+def install(package_name):
+    """Installs a package into the .paige virtual environment."""
+    tool_name = TOOL_DIR_NAME
+    tool_path = TOOL_DIR_PATH
+
+    target_pip_executable = os.path.join(tool_path, "bin", "pip")
+    click.echo(f"Installing package '{package_name}' into the '{tool_name}' virtual environment...")
+
+    try:
+        subprocess.check_call([target_pip_executable, "install", package_name])
+        click.echo(f"Package '{package_name}' successfully installed in the '{tool_name}' virtual environment.")
+    except subprocess.CalledProcessError as e:
+        click.secho(f"Error installing package '{package_name}' into virtual environment: {e}", fg='red')
+    except FileNotFoundError:
+        click.secho(f"Error: pip executable not found in '{tool_name}' virtual environment.", fg='red')
+
+
+@cli.command()
 @click.option('--dev', is_flag=True, default=False, help='Install paige in development mode (local install).')
 def init(dev:bool):
     """Initializes paige"""
-    tool_folder = TOOL_FOLDER_NAME
-    tool_path = os.path.join(GIT_ROOT, TOOL_FOLDER_NAME)
+    package = PACKAGE_NAME
+    tool_name = TOOL_DIR_NAME
+    tool_path = TOOL_DIR_PATH
 
-    click.echo(f"Initializing '{TOOL_FOLDER_NAME}' tool environment at {tool_path}...")
+    click.echo(f"Initializing '{tool_name}' tool environment at {tool_path}...")
 
     # Create .paige folder in project root
-    os.makedirs(tool_folder, exist_ok=True)
-    click.echo(f"Created folder: {tool_folder}")
+    os.makedirs(tool_path, exist_ok=True)
 
     # Create virtual environment inside .paige folder in project root
-    venv_path = os.path.join(tool_folder) # venv in .paige in project root
+    venv_path = tool_path
     click.echo(f"Creating virtual environment in: {venv_path}")
     try:
         subprocess.check_call([sys.executable, "-m", "venv", venv_path])
@@ -39,8 +57,8 @@ def init(dev:bool):
         return
 
     # Install 'paige' package into the .paige virtual environment (conditional install based on --dev flag)
-    target_pip_executable = os.path.join(tool_folder, "bin", "pip")
-    package_name_to_install = PACKAGE_NAME
+    target_pip_executable = os.path.join(tool_path, "bin", "pip")
+    package_name_to_install = package
     click.echo(f"Installing package '{package_name_to_install}' into the virtual environment...")
     try:
         if dev:
@@ -68,17 +86,16 @@ def init(dev:bool):
         with open(gitignore_path, "w") as f:
             f.write(ignores)
     except Exception as e:
-        click.secho(f"Error creating .gitignore inside '{TOOL_FOLDER_NAME}': {e}", fg='yellow')
+        click.secho(f"Error creating .gitignore inside '{tool_name}': {e}", fg='yellow')
 
     # Create a paigefile.py
-    paigefile_path = os.path.join(tool_path, TOOL_FILE_NAME)
     paigefile_contents = """
 import paige as pg
 
 def main():
     pg.generate_makefiles(
         pg.Makefile(
-            path = pg.from_git_root(),
+            path = pg.from_git_root("Makefile),
             default_target = all()
     ),
 )
@@ -88,26 +105,25 @@ def all():
     pass
 """
     try:
-        with open(paigefile_path, "w") as f:
+        with open(tool_path, "w") as f:
             f.write(paigefile_contents)
-        click.echo(f"Created empty paigefile.py in '{TOOL_FOLDER_NAME}' folder.")
-        click.echo(f"File created at: {paigefile_path}")
+        click.echo(f"Created empty paigefile.py in '{tool_name}' folder.")
+        click.echo(f"File created at: {tool_path}")
     except Exception as e:
-        click.secho(f"Error creating paigefile.py in '{TOOL_FOLDER_NAME}': {e}", fg='yellow')
+        click.secho(f"Error creating paigefile.py in '{tool_name}': {e}", fg='yellow')
 
     # Create initial Makefile in the project root
     makefile_content = f"""\
 .PHONY:
 paige:
-\t@source {TOOL_FOLDER_NAME}/bin/activate && python {TOOL_FOLDER_NAME}/{TOOL_FILE_NAME} --paige-run
+\t@echo testing
 """
     try:
-        with open(MAKEFILE_NAME, "w") as f:
+        with open(MAKEFILE_PATH, "w") as f:
             f.write(makefile_content)
-        click.echo(f"Created initial {MAKEFILE_NAME} in the project root (separated default and 'paige' targets).")
-        click.echo(f"File created at: {os.path.abspath(MAKEFILE_NAME)}")
+        click.echo(f"Created initial {MAKEFILE_PATH} at git root.")
     except Exception as e:
-        click.secho(f"Error creating {MAKEFILE_NAME}: {e}", fg='yellow')
+        click.secho(f"Error creating {MAKEFILE_PATH}: {e}", fg='yellow')
 
 if __name__ == '__main__':
     cli()

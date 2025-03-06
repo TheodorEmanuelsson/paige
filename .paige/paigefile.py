@@ -1,14 +1,12 @@
-
 import paige as pg
 
-def main():
-    pg.generate_makefiles(
-        pg.Makefile(
-            path = pg.from_git_root(),
-            default_target = all()
+makefiles_config = [
+    pg.MakefileConfig(
+        path="Makefile",
+        default_target="default_task",
     ),
-)
+]
 
-pg.task()
-def all():
+
+if __name__ == "__main__":
     pass

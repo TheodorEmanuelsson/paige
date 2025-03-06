@@ -1,6 +1,6 @@
 import os
 import subprocess
-from paige.core import (
+from paige.const import (
     GIT_ROOT,
     TOOL_DIR_PATH,
 )

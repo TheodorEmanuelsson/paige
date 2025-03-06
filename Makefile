@@ -1,3 +1,3 @@
-.PHONY:
+.PHONY: paige
 paige:
-	@echo testing
+	@python .paige/paigefile.py

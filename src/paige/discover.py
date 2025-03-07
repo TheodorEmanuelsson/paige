@@ -1,7 +1,7 @@
 import os
 import inspect
 import importlib.util
-from paige.const import TOOL_DIR_PATH
+from paige.path import from_paige_dir
 
 def scan_py_files(folder):
     """Scans .py files in a folder and returns a list of file paths."""
@@ -16,7 +16,7 @@ def scan_py_files(folder):
 def _discover_all_task_functions():
     """Scans .py files in .paige folder and returns a dictionary of task functions."""
     task_functions = {}
-    paige_folder = TOOL_DIR_PATH
+    paige_folder = from_paige_dir()
     py_files_found = scan_py_files(paige_folder)
 
     if not py_files_found:

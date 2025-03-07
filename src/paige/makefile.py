@@ -2,7 +2,6 @@
 import os
 import inspect
 import re
-from paige.const import TOOL_DIR_NAME, TOOL_DIR_PATH
 from paige.path import from_git_root
 from paige import discover
 
@@ -63,7 +62,7 @@ PYTHON := $$(VENV_BIN_DIR)/python
 .PHONY: $(paigefile)
 $(paigefile):
 \t@echo "Building paige tool..."
-\t@$(PYTHON) -m venv $(VENV_NAME) --prompt {TOOL_DIR_NAME}
+\t@$(PYTHON) -m venv $(VENV_NAME) --prompt .paige
 \t@$(VENV_BIN_DIR)/pip install --upgrade pip
 \t@$(VENV_BIN_DIR)/pip install -e {os.path.relpath(from_git_root('.'), os.path.dirname(makefile_path))}
 

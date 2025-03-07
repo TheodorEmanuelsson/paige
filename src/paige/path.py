@@ -1,35 +1,36 @@
 import os
 import subprocess
-from paige.const import (
-    GIT_ROOT,
-    TOOL_DIR_PATH,
-)
+
+from paige.const import PAIGE_DIR_NAME
 
 def from_work_dir(*path_elems):
     cwd = os.getcwd()
     return os.path.join(cwd, *path_elems)
 
+def from_paige_dir(*path_elems):
+    return from_git_root(PAIGE_DIR_NAME, path_elems)
+
 def from_git_root(*path_elems):
     try:
-        git_root = GIT_ROOT
+        git_root = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], text=True, stderr=subprocess.DEVNULL).strip()
         return os.path.join(git_root, *path_elems)
     except subprocess.CalledProcessError:
         raise Exception("Not in a git repository or git command failed.")
 
 def from_tools_dir(*path_elems):
-    tools_dir = from_git_root(TOOL_DIR_PATH, "tools")
+    tools_dir = from_paige_dir("tools", path_elems)
     path = os.path.join(tools_dir, *path_elems)
     ensure_parent_dir(path)
     return path
 
 def from_bin_dir(*path_elems):
-    bin_dir = from_git_root(TOOL_DIR_PATH, "bin")
+    bin_dir = from_paige_dir("bin", path_elems)
     path = os.path.join(bin_dir, *path_elems)
     ensure_parent_dir(path)
     return path
 
 def from_build_dir(*path_elems):
-    build_dir = from_git_root(TOOL_DIR_PATH, "build")
+    build_dir = from_paige_dir("build", path_elems)
     path = os.path.join(build_dir, *path_elems)
     ensure_parent_dir(path)
     return path

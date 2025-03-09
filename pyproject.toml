@@ -9,8 +9,6 @@ packages = [{ include = "paige",  from = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-argparse = "^1.1"
-toml = "^0.10.2"
 click = "^8.1.8"
 
 [tool.poetry.scripts]

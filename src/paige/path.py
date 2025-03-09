@@ -9,7 +9,7 @@ def from_work_dir(*path_elems:str|None) -> str:
 
 def from_git_root(*path_elems:str|None)->str:
     try:
-        git_root_bytes = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], stderr=subprocess.DEVNULL) # Get output as bytes
+        git_root_bytes = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], stderr=subprocess.DEVNULL)
         git_root = git_root_bytes.decode('utf-8')
         return os.path.join(git_root, *path_elems)
     except subprocess.CalledProcessError:

@@ -1,4 +1,3 @@
-# src/paige/deps.py
 import threading
 import os
 import logging
@@ -10,37 +9,37 @@ import contextvars
 _dependency_chain_context_key = contextvars.ContextVar('dependency_chain')
 
 def deps(ctx, *functions):
-    errs = [None] * len(functions) # Initialize error list
-    checked_functions = _check_functions(functions) # Check and convert functions to Fn objects
-    wg = threading.Barrier(len(functions) + 1) # Barrier for wait group
+    errs = [None] * len(functions)
+    checked_functions = _check_functions(functions)
+    wg = threading.Barrier(len(functions) + 1)
 
     for i, f in enumerate(checked_functions):
-        i, f = i, f # Capture loop variables for closure
+        i, f = i, f
 
         dependencies = _get_dependencies(ctx)
         for dependency in dependencies:
             if dependency.ID() == f.ID():
                 dep_names = [dep.Name() for dep in dependencies]
                 msg = f"Dependency cycle calling {f.Name()}! chain: {','.join(dep_names)}"
-                raise Exception(msg) # Panic in Go, Exception in Python
+                raise Exception(msg)
 
-        ctx = _with_dependency(ctx, f) # Update context with dependency
+        ctx = _with_dependency(ctx, f)
 
-        if _is_true(os.environ.get("SAGE_FORCE_SERIAL_DEPS", "False")): # Check for serial deps env var
-            logger = new_logger(f.Name()) # Create logger for the function
-            child_ctx = with_logger(ctx, logger) # Add logger to context
-            errs[i] = run_once(f.ID(), lambda: f.Run(child_ctx)) # Serial run with run_once
+        if _is_true(os.environ.get("PAIGE_FORCE_SERIAL_DEPS", "False")):
+            logger = new_logger(f.Name())
+            child_ctx = with_logger(ctx, logger)
+            errs[i] = run_once(f.ID(), lambda: f.Run(child_ctx))
             continue
 
         def run_in_thread():
             try:
-                logger = new_logger(f.Name()) # Create logger for the function
-                child_ctx = with_logger(ctx, logger) # Add logger to context
-                errs[i] = run_once(f.ID(), lambda: f.Run(child_ctx)) # Parallel run with run_once
-            except Exception as e_recover: # Catch exceptions in thread
-                errs[i] = e_recover # Store exception
+                logger = new_logger(f.Name())
+                child_ctx = with_logger(ctx, logger)
+                errs[i] = run_once(f.ID(), lambda: f.Run(child_ctx))
+            except Exception as e_recover:
+                errs[i] = e_recover
             finally:
-                wg.wait() # Signal completion to wait group
+                wg.wait()
 
 
         thread = threading.Thread(target=run_in_thread) # Create thread
@@ -51,28 +50,28 @@ def deps(ctx, *functions):
     exit_error = False
     for i, err in enumerate(errs):
         if err:
-            logger = new_logger(checked_functions[i].Name()) # Create logger for error output
-            logger.error(err) # Log the error
+            logger = new_logger(checked_functions[i].Name())
+            logger.error(err)
             exit_error = True
 
     if exit_error:
-        raise Exception("Deps function encountered errors.") # Or decide to sys.exit, but exceptions are more pythonic
+        raise Exception("Deps function encountered errors.")
 
 
 def serial_deps(ctx, *targets):
     for target in targets:
-        deps(ctx, target) # Just call Deps serially
+        deps(ctx, target)
 
 
 def _check_functions(functions):
     result = []
     for f in functions:
-        if isinstance(f, Fn): # Check if already a Fn instance
+        if isinstance(f, Fn):
             result.append(f)
             continue
-        if not callable(f): # Check if callable (function)
+        if not callable(f):
             raise TypeError(f"non-function used as a target dependency: {type(f)}")
-        result.append(Fn(f)) # Convert function to Fn instance
+        result.append(Fn(f))
     return result
 
 def _is_true(s):
@@ -80,13 +79,13 @@ def _is_true(s):
     return s in ('true', '1', 'yes', 'on')
 
 def _get_dependencies(ctx):
-    dependencies = _dependency_chain_context_key.get(None) # Get dependencies from context
-    return dependencies if dependencies else [] # Return list or empty list if None
+    dependencies = _dependency_chain_context_key.get(None)
+    return dependencies if dependencies else []
 
 def _with_dependency(ctx, target):
     dependencies = _get_dependencies(ctx)
-    dependencies = list(dependencies) # Create a copy to avoid modifying original
-    dependencies.append(target) # Append new dependency
+    dependencies = list(dependencies)
+    dependencies.append(target)
     new_ctx = contextvars.copy_context()
-    _dependency_chain_context_key.set(dependencies) # Set updated dependencies in new context. How to properly return new context?
-    return ctx # In Python contextvars are set globally within a context, so returning ctx is sufficient, as contextvars.copy_context was used before setting.
+    _dependency_chain_context_key.set(dependencies)
+    return ctx

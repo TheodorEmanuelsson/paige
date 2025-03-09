@@ -37,11 +37,15 @@ import paige as pg
 makefiles_config = [
     pg.MakefileConfig(
         path="Makefile",
-        default_target="default_task", # Example default target
+        default_target="default_task",
     ),
 ]
+
+
+if __name__ == "__main__":
+    pass
 """
-    paigefile_path = os.path.join(tool_folder, "{PAIGE_FILE_NAME}")
+    paigefile_path = os.path.join(tool_folder, f"{PAIGE_FILE_NAME}")
     try:
         with open(paigefile_path, "w") as f:
             f.write(paigefile_content)

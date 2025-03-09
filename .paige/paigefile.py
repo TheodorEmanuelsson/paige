@@ -3,7 +3,6 @@ import paige as pg
 makefiles_config = [
     pg.MakefileConfig(
         path="Makefile",
-        default_target="default_task",
     ),
 ]
 

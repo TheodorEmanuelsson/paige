@@ -19,10 +19,10 @@ def new_logger(name):
     prefix = name
     prefix = to_kebab_case(prefix)
     prefix = f"[{prefix}] "
-    logger = logging.getLogger(name) # Get a logger instance with the given name
-    logger.setLevel(logging.INFO) # Set default logging level
-    handler = logging.StreamHandler(sys.stderr) # Direct output to stderr
-    formatter = logging.Formatter(prefix + '%(message)s') # Define formatter with prefix
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.INFO)
+    handler = logging.StreamHandler(sys.stderr)
+    formatter = logging.Formatter(prefix + '%(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     return logger
@@ -30,14 +30,14 @@ def new_logger(name):
 def with_logger(ctx, logger):
     """Attaches a logging.Logger to the provided context."""
     token = _logger_context_key.set(logger)
-    return contextvars.copy_context() # Return a new context with the logger set.
+    return contextvars.copy_context()
 
 def AppendLoggerPrefix(ctx, prefix):
     """Appends a prefix to the current logger in the context."""
     logger = logger(ctx)
-    new_prefix = logger.handlers[0].formatter._fmt[:logger.handlers[0].formatter._fmt.find('%(message)s')] + prefix # Extract existing prefix and append
-    new_logger = new_logger(logger.name) # Create a new logger to set new handler and formatter, name could be improved
-    new_logger.handlers[0].setFormatter(logging.Formatter(new_prefix + '%(message)s')) # set new formatter with appended prefix
+    new_prefix = logger.handlers[0].formatter._fmt[:logger.handlers[0].formatter._fmt.find('%(message)s')] + prefix
+    new_logger = new_logger(logger.name)
+    new_logger.handlers[0].setFormatter(logging.Formatter(new_prefix + '%(message)s'))
     return with_logger(ctx, new_logger)
 
 def logger(ctx):

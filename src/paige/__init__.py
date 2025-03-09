@@ -1,4 +1,4 @@
-from paige.makefile import MakefileConfig, generate_makefile
+from paige.makefile import Makefile
 from paige.path import (
     from_git_root,
     from_paige_dir,
@@ -7,4 +7,3 @@ from paige.path import (
     from_bin_dir,
     from_build_dir,
 )
-from paige.exec import command, output, prepend_path

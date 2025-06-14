@@ -1,23 +1,24 @@
-[tool.poetry]
+[project]
 name = "paige"
 version = "0.1.0"
 description = "A Python build tool inspired by Sage/Mage."
-authors = ["Theodor Emanuelsson <theodor.emanuelsson@me.com>"]
-license = "MIT"
+authors = [
+    {name = "Theodor Emanuelsson", email = "theodor.emanuelsson@me.com"}
+]
+license = {text = "MIT"}
 readme = "README.md"
-packages = [{ include = "paige",  from = "src" }]
+requires-python = ">=3.9"
+dependencies = [
+    "click>=8.1.8"
+]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-click = "^8.1.8"
-
-[tool.poetry.scripts]
+[project.scripts]
 paige = "paige.cli:cli"
 paige-init = "paige.cli:init_command"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

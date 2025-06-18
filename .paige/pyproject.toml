@@ -1,7 +1,8 @@
 [project]
-name = "build_with_paige"
+name = "dot_paige"
 version = "0.1.0"
 description = "A Python build tool inspired by Sage/Mage."
 requires-python = ">=3.9"
 dependencies = [
+   "paige @ git+https://github.com/TheodorEmanuelsson/paige.git"
 ]

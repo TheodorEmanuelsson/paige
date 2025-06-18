@@ -13,3 +13,6 @@ class Makefile:
         if self.default_target is None:
             return ""
         return str(self.default_target)
+
+def generate_makefile():
+    pass

@@ -14,7 +14,6 @@ dependencies = [
 
 [project.scripts]
 paige = "paige.cli:cli"
-paige-init = "paige.cli:init_command"
 
 [build-system]
 requires = ["hatchling"]

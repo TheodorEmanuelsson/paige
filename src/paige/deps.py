@@ -1,10 +1,7 @@
-import os
 import threading
-import inspect
-from typing import List, Dict, Any, Callable, Union
-from functools import wraps
+from typing import List, Callable, Union
 
-from paige.logger import new_logger, with_logger, get_logger
+from paige.logger import get_logger
 
 
 class Target:

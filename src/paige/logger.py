@@ -1,6 +1,5 @@
 import logging
 import re
-from typing import Optional
 
 LOGGER_CONTEXT_KEY = "paige_logger"
 

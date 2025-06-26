@@ -1,5 +1,4 @@
 import os
-import sys
 import subprocess
 from paige.const import (
     PAIGE_FILE_NAME,
@@ -9,7 +8,9 @@ from paige.const import (
     GITHUB_URL,
     GITHUB_URL_SHORT,
 )
-from paige.path import from_paige_dir, from_tools_dir, from_work_dir
+from paige.path import from_paige_dir, from_tools_dir, from_work_dir, from_git_root
+from paige.generate import generate_makefiles
+from paige.makefile import Makefile
 
 
 def _init_dot_paige() -> None:
@@ -150,7 +151,20 @@ def _init_paigefile():
 
 def _init_makefile(tool_folder: str) -> None:
     """Initializes the Makefile."""
-    pass
+    makefile_path = from_git_root("Makefile")
+    if os.path.exists(makefile_path):
+        print(f"Error: Makefile already exists at: {makefile_path}")
+        return
+
+    try:
+        # Generate the initial Makefile with the default configuration
+        generate_makefiles([Makefile(path=makefile_path, default_target="default")])
+        print(f"Generated initial Makefile at: {makefile_path}")
+    except Exception as e:
+        print(f"Error generating Makefile: {makefile_path}: {e}")
+        return
+
+    return
 
 
 def init_paige(python_version: str) -> None:

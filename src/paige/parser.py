@@ -3,7 +3,6 @@ import os
 from typing import List, Dict, Any
 
 from paige.path import from_paige_dir
-from paige.namespace import is_namespace_class
 
 
 def parse_python_files() -> Dict[str, List[Dict[str, Any]]]:

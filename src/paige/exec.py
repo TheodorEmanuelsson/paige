@@ -1,8 +1,5 @@
 import os
 import subprocess
-import re
-from typing import List, Optional
-from io import StringIO
 
 from paige.path import from_git_root, from_bin_dir, from_paige_dir
 from paige.logger import get_logger
@@ -128,3 +125,32 @@ def run_command_output(ctx: dict, path: str, *args: str) -> str:
     """Convenience function to run a command and return its output."""
     cmd = command(ctx, path, *args)
     return output(cmd)
+
+
+def run(ctx: dict, path: str, *args: str) -> None:
+    """Run a command and log its output, handling empty output gracefully."""
+    logger = get_logger(ctx)
+    cmd = command(ctx, path, *args)
+
+    stdout, stderr = cmd.communicate()
+
+    # Log stdout if there is any
+    if stdout.strip():
+        for line in stdout.strip().split('\n'):
+            if line.strip():
+                logger.info(line.strip())
+
+    # Log stderr if there is any
+    if stderr.strip():
+        for line in stderr.strip().split('\n'):
+            if line.strip():
+                logger.warning(line.strip())
+
+    # Check return code
+    if cmd.returncode != 0:
+        error_msg = stderr.strip() if stderr.strip() else f"{path} failed with exit code {cmd.returncode}"
+        raise RuntimeError(error_msg)
+
+    # If no output but command succeeded, log a success message
+    if not stdout.strip() and not stderr.strip():
+        logger.info(f"{path} completed successfully")

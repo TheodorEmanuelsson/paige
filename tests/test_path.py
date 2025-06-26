@@ -4,7 +4,7 @@ import subprocess
 
 import paige as pg
 from paige.const import PAIGE_DIR_NAME
-from unittest.mock import patch, mock_open, call
+from unittest.mock import patch
 
 
 class TestPathFunctions(unittest.TestCase):

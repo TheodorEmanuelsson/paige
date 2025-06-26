@@ -8,6 +8,6 @@ from paige.path import (
     from_build_dir,
 )
 from paige.generate import generate_makefiles
-from paige.exec import command, output, context_with_env
+from paige.exec import command, output, context_with_env, run
 from paige.deps import Deps, SerialDeps, Fn
 from paige.namespace import Namespace

@@ -1,8 +1,6 @@
-import os
 import re
 from typing import List, Dict, Any, Union
 
-from paige.path import from_paige_dir, from_git_root
 from paige.namespace import get_namespace_name, get_namespace_metadata
 
 

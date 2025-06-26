@@ -6,8 +6,8 @@ import paige as pg
 from paige.const import PAIGE_DIR_NAME
 from unittest.mock import patch, mock_open, call
 
-class TestPathFunctions(unittest.TestCase):
 
+class TestPathFunctions(unittest.TestCase):
     def setUp(self):
         self.test_git_root = "/tmp/test_git_root"
         os.makedirs(self.test_git_root, exist_ok=True)
@@ -24,16 +24,22 @@ class TestPathFunctions(unittest.TestCase):
 
     @patch("subprocess.check_output")
     def test_from_git_root_success(self, mock_check_output):
-        mock_check_output.return_value = self.test_git_root.encode('utf-8')
+        mock_check_output.return_value = self.test_git_root.encode("utf-8")
         test_subdir_file = ("subdir", "file.txt")
         expected_path = os.path.join(self.test_git_root, *test_subdir_file)
         self.assertEqual(pg.path.from_git_root(*test_subdir_file), expected_path)
-        mock_check_output.assert_called_once_with(['git', 'rev-parse', '--show-toplevel'], stderr=subprocess.DEVNULL)
+        mock_check_output.assert_called_once_with(
+            ["git", "rev-parse", "--show-toplevel"], stderr=subprocess.DEVNULL
+        )
 
     @patch("subprocess.check_output")
     def test_from_git_root_failure(self, mock_check_output):
-        mock_check_output.side_effect = subprocess.CalledProcessError(returncode=1, cmd=['git', 'rev-parse', '--show-toplevel'])
-        with self.assertRaisesRegex(Exception, "Not in a git repository or git command failed."):
+        mock_check_output.side_effect = subprocess.CalledProcessError(
+            returncode=1, cmd=["git", "rev-parse", "--show-toplevel"]
+        )
+        with self.assertRaisesRegex(
+            Exception, "Not in a git repository or git command failed."
+        ):
             pg.path.from_git_root()
 
     @patch("os.makedirs")
@@ -54,7 +60,9 @@ class TestPathFunctions(unittest.TestCase):
 
     @patch("paige.path.from_git_root")
     def test_from_paige_dir(self, mock_from_git_root):
-        mock_from_git_root.side_effect = lambda *args: os.path.join("/test/paige/git/root", *args)
+        mock_from_git_root.side_effect = lambda *args: os.path.join(
+            "/test/paige/git/root", *args
+        )
         expected_paige_dir = os.path.join("/test/paige/git/root", PAIGE_DIR_NAME)
         self.assertEqual(pg.path.from_paige_dir(), expected_paige_dir)
         test_subdir_file = ("subdir", "file.txt")
@@ -62,5 +70,6 @@ class TestPathFunctions(unittest.TestCase):
         self.assertEqual(pg.path.from_paige_dir(*test_subdir_file), expected_path)
         mock_from_git_root.assert_any_call(PAIGE_DIR_NAME)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

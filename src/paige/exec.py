@@ -140,19 +140,19 @@ def run(ctx: dict, path: str, *args: str) -> None:
     logger = get_logger(ctx)
     cmd = command(ctx, path, *args)
 
-        stdout, stderr = cmd.communicate()
+    stdout, stderr = cmd.communicate()
 
-        # Log stdout if there is any
-        if stdout.strip():
-            for line in stdout.strip().split("\n"):
-                if line.strip():
-                    logger.info(line.strip())
+    # Log stdout if there is any
+    if stdout.strip():
+        for line in stdout.strip().split("\n"):
+            if line.strip():
+                logger.info(line.strip())
 
-        # Log stderr if there is any
-        if stderr.strip():
-            for line in stderr.strip().split("\n"):
-                if line.strip():
-                    logger.warning(line.strip())
+    # Log stderr if there is any
+    if stderr.strip():
+        for line in stderr.strip().split("\n"):
+            if line.strip():
+                logger.warning(line.strip())
 
     # Check return code
     if cmd.returncode != 0:

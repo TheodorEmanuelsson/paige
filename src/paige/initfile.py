@@ -1,11 +1,19 @@
 import os
 import sys
 import subprocess
-from paige.const import PAIGE_FILE_NAME, UV_CONTENT, GITIGNORE_CONTENT, PAIGE_FILE_CONTENT, GITHUB_URL, GITHUB_URL_SHORT
+from paige.const import (
+    PAIGE_FILE_NAME,
+    UV_CONTENT,
+    GITIGNORE_CONTENT,
+    PAIGE_FILE_CONTENT,
+    GITHUB_URL,
+    GITHUB_URL_SHORT,
+)
 from paige.path import from_paige_dir, from_tools_dir, from_work_dir
 
+
 def _init_dot_paige() -> None:
-    '''Initializes the .paige directory.'''
+    """Initializes the .paige directory."""
     paige_path = from_paige_dir()
     if os.path.exists(paige_path):
         print(f"Error: .paige directory already exists at: {paige_path}")
@@ -17,9 +25,11 @@ def _init_dot_paige() -> None:
     except Exception as e:
         print(f"Error creating .paige directory: {e}")
         return
+    return
 
-def _init_uv(python_version:str) -> None:
-    '''Initializes a uv pyproject.toml file and creates the environment.'''
+
+def _init_uv(python_version: str) -> None:
+    """Initializes a uv pyproject.toml file and creates the environment."""
     paige_path = from_paige_dir()
     pyproject_path = from_paige_dir("pyproject.toml")
     if os.path.exists(pyproject_path):
@@ -29,10 +39,11 @@ def _init_uv(python_version:str) -> None:
     try:
         # Create pyproject.toml
         with open(pyproject_path, "w") as f:
-            f.write(UV_CONTENT.format(
-                python_version=python_version,
-                github_url=GITHUB_URL_SHORT
-            ))
+            f.write(
+                UV_CONTENT.format(
+                    python_version=python_version, github_url=GITHUB_URL_SHORT
+                )
+            )
     except Exception as e:
         print(f"Error generating uv pyproject.toml: {pyproject_path}: {e}")
         return
@@ -43,23 +54,26 @@ def _init_uv(python_version:str) -> None:
         os.chdir(paige_path)
         try:
             # Create the virtual environment
-            subprocess.check_call(['uv', 'venv', '.venv'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.check_call(
+                ["uv", "venv", ".venv"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
             print(f"Created uv environment in: {os.path.join(paige_path, '.venv')}")
 
             # Set VIRTUAL_ENV to the new environment and run sync
-            venv_path = os.path.join(paige_path, '.venv')
+            venv_path = os.path.join(paige_path, ".venv")
             env = os.environ.copy()
-            env['VIRTUAL_ENV'] = venv_path
+            env["VIRTUAL_ENV"] = venv_path
 
             # Install paige from GitHub URL
-            #_install_paige(venv_path)
+            # _install_paige(venv_path)
 
             # Sync other dependencies with verbose output
             try:
-                result = subprocess.run(['uv', 'sync', '--active'],
-                                     env=env,
-                                     capture_output=True,
-                                     text=True)
+                result = subprocess.run(
+                    ["uv", "sync", "--active"], env=env, capture_output=True, text=True
+                )
                 if result.returncode != 0:
                     print(f"Error syncing dependencies: {result.stderr}")
                 else:
@@ -74,28 +88,32 @@ def _init_uv(python_version:str) -> None:
 
     return
 
-def _install_paige(venv_path:str) -> None:
-    '''Installs paige from GitHub.'''
+
+def _install_paige(venv_path: str) -> None:
+    """Installs paige from GitHub."""
     env = os.environ.copy()
-    env['VIRTUAL_ENV'] = venv_path
+    env["VIRTUAL_ENV"] = venv_path
     try:
-        subprocess.check_call(['uv', 'pip', 'install', f'git+{GITHUB_URL}'], env=env)
+        subprocess.check_call(["uv", "pip", "install", f"git+{GITHUB_URL}"], env=env)
         print("Installed paige from GitHub")
     except subprocess.CalledProcessError as e:
         print(f"Error installing paige: {e}")
         # Try to get more detailed error output
         try:
-            result = subprocess.run(['uv', 'pip', 'install', f'git+{GITHUB_URL}'],
-                                  env=env,
-                                  capture_output=True,
-                                  text=True)
+            result = subprocess.run(
+                ["uv", "pip", "install", f"git+{GITHUB_URL}"],
+                env=env,
+                capture_output=True,
+                text=True,
+            )
             print(f"Error output: {result.stderr}")
         except Exception as e2:
             print(f"Could not get detailed error: {e2}")
     return
 
+
 def _init_gitignore() -> None:
-    '''Initializes the .gitignore file.'''
+    """Initializes the .gitignore file."""
 
     gitignore_path = from_paige_dir(".gitignore")
     if os.path.exists(gitignore_path):
@@ -111,8 +129,9 @@ def _init_gitignore() -> None:
 
     return
 
+
 def _init_paigefile():
-    '''Initial a paigefile.py'''
+    """Initial a paigefile.py"""
 
     paigefile_path = from_paige_dir(PAIGE_FILE_NAME)
     if os.path.exists(paigefile_path):
@@ -128,13 +147,14 @@ def _init_paigefile():
 
     return
 
-def _init_makefile(tool_folder:str) -> None:
-    '''Initializes the Makefile.'''
+
+def _init_makefile(tool_folder: str) -> None:
+    """Initializes the Makefile."""
     pass
 
-def init_paige(python_version:str) -> None:
-    '''Initializes a new paige project.'''
 
+def init_paige(python_version: str) -> None:
+    """Initializes a new paige project."""
     _init_dot_paige()
     _init_uv(python_version)
     _init_gitignore()

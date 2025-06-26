@@ -6,22 +6,49 @@ import sys
 from paige.path import from_paige_dir
 from paige.initfile import init_paige
 
+
 @click.group()
 def cli():
     pass
 
+
 @cli.command()
-@click.argument('package_name')
-def install(package_name:str):
+@click.argument("package_name")
+def install(package_name: str):
     """Installs a package into the .paige virtual environment."""
-    pass
+    paige_dir = from_paige_dir()
+    pyproject_path = os.path.join(paige_dir, "pyproject.toml")
+
+    if not os.path.exists(pyproject_path):
+        click.echo(
+            f"pyproject.toml not found in {paige_dir}. Make sure the environment is initialized."
+        )
+        sys.exit(1)
+
+    try:
+        # Add package to pyproject.toml
+        result = subprocess.run(
+            ["uv", "add", package_name], cwd=paige_dir, capture_output=True, text=True
+        )
+
+        if result.returncode != 0:
+            click.echo(f"Error adding package: {result.stderr}")
+            sys.exit(result.returncode)
+
+        click.echo(f"Successfully added {package_name} to pyproject.toml")
+        click.echo("Package is now available in the .paige environment")
+
+    except Exception as e:
+        click.echo(f"Error installing package: {e}")
+        sys.exit(1)
 
 
 @cli.command()
-@click.argument('python_version')
-def init(python_version:str):
+@click.argument("python_version")
+def init(python_version: str):
     """Initializes paige tool in the project."""
     init_paige(python_version)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     cli()

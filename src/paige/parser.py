@@ -1,0 +1,198 @@
+import ast
+import os
+from typing import List, Dict, Any
+
+from paige.path import from_paige_dir
+from paige.namespace import is_namespace_class
+
+
+def parse_python_files() -> Dict[str, List[Dict[str, Any]]]:
+    """Parse Python files in .paige directory to find target functions."""
+    paige_dir = from_paige_dir()
+    functions = {}
+
+    if not os.path.exists(paige_dir):
+        return functions
+
+    # Find all Python files in .paige directory
+    for py_file in os.listdir(paige_dir):
+        if not py_file.endswith(".py") or py_file == "__init__.py":
+            continue
+
+        file_path = os.path.join(paige_dir, py_file)
+        try:
+            with open(file_path, "r") as f:
+                tree = ast.parse(f.read())
+
+            module_functions = []
+            namespace_classes = []
+
+            # First pass: find namespace classes
+            for node in ast.walk(tree):
+                if isinstance(node, ast.ClassDef):
+                    # Check if this class inherits from Namespace
+                    for base in node.bases:
+                        if isinstance(base, ast.Name) and base.id == "Namespace":
+                            namespace_classes.append(node.name)
+                            break
+                        elif isinstance(base, ast.Attribute):
+                            if base.attr == "Namespace":
+                                namespace_classes.append(node.name)
+                                break
+
+            # Second pass: find functions and methods
+            for node in ast.walk(tree):
+                if isinstance(node, ast.FunctionDef):
+                    # Check if it's a public function (not starting with _)
+                    if not node.name.startswith("_"):
+                        # Check if it has the right signature (at least one parameter)
+                        if node.args.args:
+                            # Check if first parameter is 'ctx' or has no annotation
+                            first_param = node.args.args[0]
+                            if (
+                                first_param.arg == "ctx"
+                                or first_param.annotation is None
+                                or isinstance(first_param.annotation, ast.Name)
+                                and first_param.annotation.id == "dict"
+                            ):
+                                # Check if this is a method (has self parameter)
+                                if (
+                                    node.args.args[0].arg == "self"
+                                    and len(node.args.args) > 1
+                                ):
+                                    # This is a method, check if it's in a namespace class
+                                    # For now, we'll assume it's a namespace method if the class exists
+                                    if namespace_classes:
+                                        module_functions.append(
+                                            {
+                                                "name": node.name,
+                                                "args": [
+                                                    arg.arg
+                                                    for arg in node.args.args[1:]
+                                                ],  # Skip self
+                                                "module": py_file[
+                                                    :-3
+                                                ],  # Remove .py extension
+                                                "namespace": namespace_classes[0]
+                                                if namespace_classes
+                                                else None,
+                                            }
+                                        )
+                                else:
+                                    # This is a regular function
+                                    module_functions.append(
+                                        {
+                                            "name": node.name,
+                                            "args": [arg.arg for arg in node.args.args],
+                                            "module": py_file[
+                                                :-3
+                                            ],  # Remove .py extension
+                                            "namespace": None,
+                                        }
+                                    )
+
+            if module_functions:
+                functions[py_file[:-3]] = module_functions
+
+        except Exception as e:
+            print(f"Warning: Could not parse {py_file}: {e}")
+
+    return functions
+
+
+def generate_init_file(
+    functions: Dict[str, List[Dict[str, Any]]], makefiles: List
+) -> str:
+    """Generate a temporary Python file that imports all functions and creates CLI."""
+    lines = []
+
+    # Header
+    lines.append("#!/usr/bin/env python3")
+    lines.append("# Code generated by paige. DO NOT EDIT.")
+    lines.append("")
+    lines.append("import sys")
+    lines.append("import importlib.util")
+    lines.append("import os")
+    lines.append("from pathlib import Path")
+    lines.append("")
+
+    # Import all modules
+    for module_name in functions.keys():
+        lines.append(f"import {module_name}")
+    lines.append("")
+
+    # Main function
+    lines.append("def main():")
+    lines.append("    if len(sys.argv) < 2:")
+    lines.append('        print("Targets:")')
+
+    # List all available targets
+    for module_name, module_functions in functions.items():
+        for func in module_functions:
+            if func.get("namespace"):
+                lines.append(f'        print("\\t{func["namespace"]}:{func["name"]}")')
+            else:
+                lines.append(f'        print("\\t{func["name"]}")')
+
+    lines.append("        sys.exit(0)")
+    lines.append("")
+    lines.append("    target = sys.argv[1]")
+    lines.append("    args = sys.argv[2:]")
+    lines.append("")
+
+    # Switch statement for each target
+    for module_name, module_functions in functions.items():
+        for func in module_functions:
+            func_name = func["name"]
+            func_args = func["args"]
+            namespace = func.get("namespace")
+
+            # Create target name with namespace if applicable
+            if namespace:
+                target_name = f"{namespace}:{func_name}"
+            else:
+                target_name = func_name
+
+            lines.append(f'    if target == "{target_name}":')
+
+            # Validate argument count
+            expected_args = len(func_args) - 1  # -1 for context parameter
+            if expected_args > 0:
+                lines.append(f"        if len(args) != {expected_args}:")
+                lines.append(
+                    f'            print(f"wrong number of arguments to {target_name}, got {{len(args)}} expected {expected_args}")'
+                )
+                lines.append("            sys.exit(1)")
+                lines.append("")
+
+            # Call the function
+            call_args = []
+            for i, arg in enumerate(func_args[1:], 0):  # Skip first arg (context)
+                lines.append(f"        {arg} = args[{i}]")
+                call_args.append(arg)
+
+            if namespace:
+                # Call as method on namespace instance
+                lines.append(
+                    f"        {module_name}.{namespace}().{func_name}({{}}, {', '.join(call_args)})"
+                )
+            else:
+                # Call as regular function
+                lines.append(
+                    f"        {module_name}.{func_name}({{}}, {', '.join(call_args)})"
+                )
+            lines.append("        sys.exit(0)")
+            lines.append("")
+
+    lines.append('    print(f"unknown target specified: {target}")')
+    lines.append("    sys.exit(1)")
+    lines.append("")
+    lines.append("if __name__ == '__main__':")
+    lines.append("    main()")
+    lines.append("    # Self-delete after execution")
+    lines.append("    try:")
+    lines.append("        os.remove(__file__)")
+    lines.append("    except Exception as e:")
+    lines.append("        pass")
+
+    return "\n".join(lines)

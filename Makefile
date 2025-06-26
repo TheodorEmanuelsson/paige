@@ -7,7 +7,7 @@ cwd := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 paige_dir := $(abspath $(cwd)/.paige)
 paige_venv := $(paige_dir)/.venv
 python := $(paige_venv)/bin/python
-paige_executable := $(paige_dir)/generating_paigefile.py
+paige_binary := $(paige_dir)/bin/paigefile
 
 # Setup Python environment
 $(python):
@@ -27,18 +27,19 @@ update-paige: $(python)
 clean-paige:
 	@rm -rf $(paige_dir)/.venv
 	@rm -rf $(paige_dir)/__pycache__
+	@rm -rf $(paige_dir)/bin
 
-$(paige_executable):
+$(paige_binary):
 	python -m paige.generate
 
 .PHONY: default
-default:
-	python -m paige.cli run default
+default: $(paige_binary)
+	@cd $(paige_dir) && ./bin/paigefile default
 
 .PHONY: ruff-format
-ruff-format:
-	python -m paige.cli run ruff_format
+ruff-format: $(paige_binary)
+	@cd $(paige_dir) && ./bin/paigefile ruff_format
 
 .PHONY: ruff-fix
-ruff-fix:
-	python -m paige.cli run ruff_fix
+ruff-fix: $(paige_binary)
+	@cd $(paige_dir) && ./bin/paigefile ruff_fix

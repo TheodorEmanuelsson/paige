@@ -99,7 +99,7 @@ def generate_makefile_content(
     lines.append("paige_dir := $(abspath $(cwd)/.paige)")
     lines.append("paige_venv := $(paige_dir)/.venv")
     lines.append("python := $(paige_venv)/bin/python")
-    lines.append("paige_executable := $(paige_dir)/generating_paigefile.py")
+    lines.append("paige_binary := $(paige_dir)/bin/paigefile")
     lines.append("")
 
     # Python setup
@@ -129,10 +129,11 @@ def generate_makefile_content(
     lines.append("clean-paige:")
     lines.append("\t@rm -rf $(paige_dir)/.venv")
     lines.append("\t@rm -rf $(paige_dir)/__pycache__")
+    lines.append("\t@rm -rf $(paige_dir)/bin")
     lines.append("")
 
-    # Rule to create the executable when needed
-    lines.append("$(paige_executable):")
+    # Rule to create the binary when needed
+    lines.append("$(paige_binary):")
     lines.append("\tpython -m paige.generate")
     lines.append("")
 
@@ -150,12 +151,12 @@ def generate_makefile_content(
                 # Main namespace - include all functions
                 pass
 
-            target_name = to_make_target(func['name'])
-            parameters = func['args'][1:]  # Skip context parameter
+            target_name = to_make_target(func["name"])
+            parameters = func["args"][1:]  # Skip context parameter
             make_vars = to_make_vars(parameters)
 
             lines.append(f".PHONY: {target_name}")
-            lines.append(f"{target_name}: $(paige_executable)")
+            lines.append(f"{target_name}: $(paige_binary)")
 
             # Add parameter validation
             for var in make_vars:
@@ -164,7 +165,7 @@ def generate_makefile_content(
                 lines.append("endif")
 
             # Build the command
-            cmd_parts = ["@$(paige_executable)"]
+            cmd_parts = ["@cd $(paige_dir) && ./bin/paigefile"]
             cmd_parts.append(f"{func['name']}")
 
             # Add parameters

@@ -112,6 +112,11 @@ def generate_init_file(
     lines.append("import sys")
     lines.append("import os")
     lines.append("")
+    # Ensure .paige (parent of bin) is in sys.path
+    lines.append(
+        "sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))"
+    )
+    lines.append("")
 
     # Import all modules
     for module_name in functions.keys():

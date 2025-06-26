@@ -28,18 +28,20 @@ clean-paige:
 	@rm -rf $(paige_dir)/.venv
 	@rm -rf $(paige_dir)/__pycache__
 
+$(paige_executable):
+	python -m paige.generate
+
 .PHONY: default
-default: $(paige_executable)
+default:
 	@$(paige_executable) default
+	@rm -f $(paige_executable)
 
 .PHONY: ruff-format
-ruff-format: $(paige_executable)
+ruff-format:
 	@$(paige_executable) ruff_format
+	@rm -f $(paige_executable)
 
 .PHONY: ruff-fix
-ruff-fix: $(paige_executable)
+ruff-fix:
 	@$(paige_executable) ruff_fix
-
-.PHONY: ruff-lint
-ruff-lint: $(paige_executable)
-	@$(paige_executable) ruff_lint
+	@rm -f $(paige_executable)

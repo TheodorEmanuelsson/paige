@@ -131,6 +131,11 @@ def generate_makefile_content(
     lines.append("\t@rm -rf $(paige_dir)/__pycache__")
     lines.append("")
 
+    # Rule to create the executable when needed
+    lines.append("$(paige_executable):")
+    lines.append("\tpython -m paige.generate")
+    lines.append("")
+
     # Generate targets for functions
     namespace = makefile.get_namespace_name()
 
@@ -150,7 +155,7 @@ def generate_makefile_content(
             make_vars = to_make_vars(parameters)
 
             lines.append(f".PHONY: {target_name}")
-            lines.append(f"{target_name}: $(paige_executable)")
+            lines.append(f"{target_name}:")
 
             # Add parameter validation
             for var in make_vars:
@@ -159,15 +164,14 @@ def generate_makefile_content(
                 lines.append("endif")
 
             # Build the command
-            cmd_parts = ["@$(paige_executable)"]
-            cmd_parts.append(func["name"])  # Use original function name, not kebab-case
+            cmd_parts = ["python -m paige.cli run"]
+            cmd_parts.append(f"{func['name']}")
 
             # Add parameters
             for var in make_vars:
                 cmd_parts.append(f'"$({var})"')
 
             lines.append("\t" + " ".join(cmd_parts))
-            lines.append("\t@rm -f $(paige_executable)")
             lines.append("")
 
     # Add sub-makefiles for other namespaces

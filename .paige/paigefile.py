@@ -26,10 +26,5 @@ def ruff_fix(ctx):
     pg.run(ctx, "ruff", "check", ".", "--fix")
 
 
-def ruff_lint(ctx):
-    """Lint code using ruff."""
-    pg.run(ctx, "ruff", "check", ".")
-
-
 if __name__ == "__main__":
     main()

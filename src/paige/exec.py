@@ -135,43 +135,46 @@ def run_command_output(ctx: dict, path: str, *args: str) -> str:
     return output(cmd)
 
 
-def run(ctx: dict, path: str, *args: str) -> None:
-    """Run a command and log its output, handling empty output gracefully."""
+def run(ctx: dict, target: str, *args: str) -> None:
+    """Create generating_paigefile.py, run the target, and clean up after."""
+    import paige as pg
     logger = get_logger(ctx)
-    create_generating_paigefile()
-    cmd = command(ctx, path, *args)
+    executable_path = pg.create_generating_paigefile()
 
-    stdout, stderr = cmd.communicate()
+    try:
+        # Use the original command execution logic
+        cmd = command(ctx, executable_path, target, *args)
 
-    # Log stdout if there is any
-    if stdout.strip():
-        for line in stdout.strip().split("\n"):
-            if line.strip():
-                logger.info(line.strip())
+        stdout, stderr = cmd.communicate()
 
-    # Log stderr if there is any
-    if stderr.strip():
-        for line in stderr.strip().split("\n"):
-            if line.strip():
-                logger.warning(line.strip())
+        # Log stdout if there is any
+        if stdout.strip():
+            for line in stdout.strip().split("\n"):
+                if line.strip():
+                    logger.info(line.strip())
 
-    # Check return code
-    if cmd.returncode != 0:
-        error_msg = (
-            stderr.strip()
-            if stderr.strip()
-            else f"{path} failed with exit code {cmd.returncode}"
-        )
-        raise RuntimeError(error_msg)
+        # Log stderr if there is any
+        if stderr.strip():
+            for line in stderr.strip().split("\n"):
+                if line.strip():
+                    logger.warning(line.strip())
 
-    # If no output but command succeeded, log a success message
-    if not stdout.strip() and not stderr.strip():
-        logger.info(f"{path} completed successfully")
+        # Check return code
+        if cmd.returncode != 0:
+            error_msg = (
+                stderr.strip()
+                if stderr.strip()
+                else f"{target} failed with exit code {cmd.returncode}"
+            )
+            raise RuntimeError(error_msg)
 
-    # If this was a generated paigefile, clean it up
-    if path.endswith("generating_paigefile.py"):
+        # If no output but command succeeded, log a success message
+        if not stdout.strip() and not stderr.strip():
+            logger.info(f"{target} completed successfully")
+
+    finally:
         try:
-            os.remove(path)
+            os.remove(executable_path)
             logger.info("Cleaned up temporary executable")
         except Exception:
             pass

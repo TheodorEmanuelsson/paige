@@ -55,28 +55,31 @@ def generate_makefiles(makefiles: List[Makefile]):
 
     # Create the generating_paigefile.py
     init_filename = create_generating_paigefile()
+    try:
+        # Generate the makefiles
+        for makefile in makefiles:
+            if not makefile.path:
+                raise ValueError("Path needs to be defined for Makefile")
 
-    # Generate the makefiles
-    for makefile in makefiles:
-        if not makefile.path:
-            raise ValueError("Path needs to be defined for Makefile")
+            # Ensure directory exists
+            os.makedirs(os.path.dirname(makefile.path), exist_ok=True)
 
-        # Ensure directory exists
-        os.makedirs(os.path.dirname(makefile.path), exist_ok=True)
+            # Generate Makefile content
+            content = generate_makefile_content(
+                makefile, parse_python_files(), init_filename, makefiles
+            )
 
-        # Generate Makefile content
-        content = generate_makefile_content(
-            makefile, parse_python_files(), init_filename, makefiles
-        )
+            # Write Makefile
+            with open(makefile.path, "w") as f:
+                f.write(content)
 
-        # Write Makefile
-        with open(makefile.path, "w") as f:
-            f.write(content)
-
-        logger.info(f"Generated Makefile: {makefile.path}")
-
-    # Don't clean up the temporary file - it's needed by the Makefile
-    # os.remove(init_filename)
+            logger.info(f"Generated Makefile: {makefile.path}")
+    finally:
+        # Always clean up the temporary file
+        try:
+            os.remove(init_filename)
+        except Exception:
+            pass
 
     logger.info("Makefile generation complete!")
 

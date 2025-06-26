@@ -37,7 +37,7 @@ requires-dist = [{ name = "paige", git = "https://github.com/TheodorEmanuelsson/
 [[package]]
 name = "paige"
 version = "0.1.0"
-source = { git = "https://github.com/TheodorEmanuelsson/paige.git#9ba91a4ab64d2592b3e56b4449990aca51182037" }
+source = { git = "https://github.com/TheodorEmanuelsson/paige.git#1d3719aa985232173d0dc5ad1f188ba35b99119a" }
 dependencies = [
     { name = "click" },
 ]

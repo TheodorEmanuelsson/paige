@@ -3,7 +3,6 @@ import subprocess
 
 from paige.path import from_git_root, from_bin_dir, from_paige_dir
 from paige.logger import get_logger
-from paige.generate import create_generating_paigefile
 
 
 # Context key for storing environment variables

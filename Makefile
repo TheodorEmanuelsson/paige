@@ -33,15 +33,12 @@ $(paige_executable):
 
 .PHONY: default
 default:
-	@$(paige_executable) default
-	@rm -f $(paige_executable)
+	python -m paige.cli run default
 
 .PHONY: ruff-format
 ruff-format:
-	@$(paige_executable) ruff_format
-	@rm -f $(paige_executable)
+	python -m paige.cli run ruff_format
 
 .PHONY: ruff-fix
 ruff-fix:
-	@$(paige_executable) ruff_fix
-	@rm -f $(paige_executable)
+	python -m paige.cli run ruff_fix

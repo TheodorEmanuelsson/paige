@@ -135,15 +135,10 @@ def run_command_output(ctx: dict, path: str, *args: str) -> str:
     return output(cmd)
 
 
-def run(ctx: dict, target: str, *args: str) -> None:
-    """Create generating_paigefile.py, run the target, and clean up after."""
-    import paige as pg
+def run(ctx: dict, path: str, *args: str) -> None:
+    """Run a command and log its output, handling empty output gracefully."""
     logger = get_logger(ctx)
-    executable_path = pg.create_generating_paigefile()
-
-    try:
-        # Use the original command execution logic
-        cmd = command(ctx, executable_path, target, *args)
+    cmd = command(ctx, path, *args)
 
         stdout, stderr = cmd.communicate()
 
@@ -159,22 +154,15 @@ def run(ctx: dict, target: str, *args: str) -> None:
                 if line.strip():
                     logger.warning(line.strip())
 
-        # Check return code
-        if cmd.returncode != 0:
-            error_msg = (
-                stderr.strip()
-                if stderr.strip()
-                else f"{target} failed with exit code {cmd.returncode}"
-            )
-            raise RuntimeError(error_msg)
+    # Check return code
+    if cmd.returncode != 0:
+        error_msg = (
+            stderr.strip()
+            if stderr.strip()
+            else f"{path} failed with exit code {cmd.returncode}"
+        )
+        raise RuntimeError(error_msg)
 
-        # If no output but command succeeded, log a success message
-        if not stdout.strip() and not stderr.strip():
-            logger.info(f"{target} completed successfully")
-
-    finally:
-        try:
-            os.remove(executable_path)
-            logger.info("Cleaned up temporary executable")
-        except Exception:
-            pass
+    # If no output but command succeeded, log a success message
+    if not stdout.strip() and not stderr.strip():
+        logger.info(f"{path} completed successfully")

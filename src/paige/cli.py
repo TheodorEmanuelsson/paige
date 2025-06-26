@@ -50,26 +50,5 @@ def init(python_version: str):
     init_paige(python_version)
 
 
-@cli.command()
-@click.argument("target")
-@click.argument("args", nargs=-1)
-def run(target, args):
-    """Generates the temp file, runs the target, and deletes the temp file."""
-    import paige as pg
-    import subprocess
-
-    ctx = {}
-    executable_path = pg.create_generating_paigefile()
-    try:
-        cmd = [executable_path, target] + list(args)
-        result = subprocess.run(cmd)
-        sys.exit(result.returncode)
-    finally:
-        try:
-            os.remove(executable_path)
-        except Exception:
-            pass
-
-
 if __name__ == "__main__":
     cli()

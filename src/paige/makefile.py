@@ -150,12 +150,12 @@ def generate_makefile_content(
                 # Main namespace - include all functions
                 pass
 
-            target_name = to_make_target(func["name"])
-            parameters = func["args"][1:]  # Skip context parameter
+            target_name = to_make_target(func['name'])
+            parameters = func['args'][1:]  # Skip context parameter
             make_vars = to_make_vars(parameters)
 
             lines.append(f".PHONY: {target_name}")
-            lines.append(f"{target_name}:")
+            lines.append(f"{target_name}: $(paige_executable)")
 
             # Add parameter validation
             for var in make_vars:
@@ -164,7 +164,7 @@ def generate_makefile_content(
                 lines.append("endif")
 
             # Build the command
-            cmd_parts = ["python -m paige.cli run"]
+            cmd_parts = ["@$(paige_executable)"]
             cmd_parts.append(f"{func['name']}")
 
             # Add parameters

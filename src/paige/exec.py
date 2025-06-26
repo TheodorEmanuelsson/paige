@@ -136,19 +136,23 @@ def run(ctx: dict, path: str, *args: str) -> None:
 
     # Log stdout if there is any
     if stdout.strip():
-        for line in stdout.strip().split('\n'):
+        for line in stdout.strip().split("\n"):
             if line.strip():
                 logger.info(line.strip())
 
     # Log stderr if there is any
     if stderr.strip():
-        for line in stderr.strip().split('\n'):
+        for line in stderr.strip().split("\n"):
             if line.strip():
                 logger.warning(line.strip())
 
     # Check return code
     if cmd.returncode != 0:
-        error_msg = stderr.strip() if stderr.strip() else f"{path} failed with exit code {cmd.returncode}"
+        error_msg = (
+            stderr.strip()
+            if stderr.strip()
+            else f"{path} failed with exit code {cmd.returncode}"
+        )
         raise RuntimeError(error_msg)
 
     # If no output but command succeeded, log a success message

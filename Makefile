@@ -39,3 +39,7 @@ ruff-format: $(paige_executable)
 .PHONY: ruff-fix
 ruff-fix: $(paige_executable)
 	@$(paige_executable) ruff_fix
+
+.PHONY: ruff-lint
+ruff-lint: $(paige_executable)
+	@$(paige_executable) ruff_lint

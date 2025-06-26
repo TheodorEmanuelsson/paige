@@ -167,6 +167,7 @@ def generate_makefile_content(
                 cmd_parts.append(f'"$({var})"')
 
             lines.append("\t" + " ".join(cmd_parts))
+            lines.append("\t@rm -f $(paige_executable)")
             lines.append("")
 
     # Add sub-makefiles for other namespaces

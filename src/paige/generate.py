@@ -10,15 +10,10 @@ from paige.logger import new_logger, with_logger, get_logger
 from paige.parser import parse_python_files, generate_init_file
 
 
-def generate_makefiles(makefiles: List[Makefile]):
+def create_generating_paigefile() -> str:
+    """Create the generating_paigefile.py executable and return its path."""
     ctx = with_logger({}, new_logger("paige"))
     logger = get_logger(ctx)
-    logger.info("building binary and generating Makefiles...")
-
-    if len(makefiles) == 0:
-        raise ValueError(
-            "no makefiles to generate, see https://github.com/TheodorEmanuelsson/paige for more info"
-        )
 
     # Parse Python files to find target functions
     functions = parse_python_files()
@@ -27,7 +22,7 @@ def generate_makefiles(makefiles: List[Makefile]):
 
     # Generate the init file
     init_filename = from_paige_dir("generating_paigefile.py")
-    init_content = generate_init_file(functions, makefiles)
+    init_content = generate_init_file(functions, [])
 
     with open(init_filename, "w") as f:
         f.write(init_content)
@@ -45,6 +40,22 @@ def generate_makefiles(makefiles: List[Makefile]):
     except Exception as e:
         logger.error(f"Error testing generated file: {e}")
 
+    return init_filename
+
+
+def generate_makefiles(makefiles: List[Makefile]):
+    ctx = with_logger({}, new_logger("paige"))
+    logger = get_logger(ctx)
+    logger.info("building binary and generating Makefiles...")
+
+    if len(makefiles) == 0:
+        raise ValueError(
+            "no makefiles to generate, see https://github.com/TheodorEmanuelsson/paige for more info"
+        )
+
+    # Create the generating_paigefile.py
+    init_filename = create_generating_paigefile()
+
     # Generate the makefiles
     for makefile in makefiles:
         if not makefile.path:
@@ -55,7 +66,7 @@ def generate_makefiles(makefiles: List[Makefile]):
 
         # Generate Makefile content
         content = generate_makefile_content(
-            makefile, functions, init_filename, makefiles
+            makefile, parse_python_files(), init_filename, makefiles
         )
 
         # Write Makefile

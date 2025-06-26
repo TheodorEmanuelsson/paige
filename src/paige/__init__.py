@@ -7,7 +7,7 @@ from paige.path import (
     from_bin_dir,
     from_build_dir,
 )
-from paige.generate import generate_makefiles
+from paige.generate import generate_makefiles, create_generating_paigefile
 from paige.exec import command, output, context_with_env, run
 from paige.deps import Deps, SerialDeps, Fn
 from paige.namespace import Namespace
@@ -21,6 +21,7 @@ __all__ = [
     "from_bin_dir",
     "from_build_dir",
     "generate_makefiles",
+    "create_generating_paigefile",
     "command",
     "output",
     "context_with_env",

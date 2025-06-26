@@ -3,10 +3,18 @@ import subprocess
 
 from paige.path import from_git_root, from_bin_dir, from_paige_dir
 from paige.logger import get_logger
+from paige.generate import create_generating_paigefile
 
 
 # Context key for storing environment variables
 CMD_ENV_KEY = "cmd_env"
+
+
+def clean_up_paige_executable():
+    """Clean up the paige executable."""
+    paige_executable = from_paige_dir("generating_paigefile.py")
+    if os.path.exists(paige_executable):
+        os.remove(paige_executable)
 
 
 def context_with_env(ctx: dict, *env_vars: str) -> dict:
@@ -130,6 +138,7 @@ def run_command_output(ctx: dict, path: str, *args: str) -> str:
 def run(ctx: dict, path: str, *args: str) -> None:
     """Run a command and log its output, handling empty output gracefully."""
     logger = get_logger(ctx)
+    create_generating_paigefile()
     cmd = command(ctx, path, *args)
 
     stdout, stderr = cmd.communicate()
@@ -158,3 +167,11 @@ def run(ctx: dict, path: str, *args: str) -> None:
     # If no output but command succeeded, log a success message
     if not stdout.strip() and not stderr.strip():
         logger.info(f"{path} completed successfully")
+
+    # If this was a generated paigefile, clean it up
+    if path.endswith("generating_paigefile.py"):
+        try:
+            os.remove(path)
+            logger.info("Cleaned up temporary executable")
+        except Exception:
+            pass

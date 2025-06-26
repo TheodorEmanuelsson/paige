@@ -51,6 +51,10 @@ def ruff_fix(ctx):
     """Autofix code using ruff."""
     pg.run(ctx, "ruff", "check", ".", "--fix")
 
+def ruff_lint(ctx):
+    """Run ruff linting without fixing."""
+    pg.run(ctx, "ruff", "check", ".")
+
 if __name__ == "__main__":
     main()
 '''
